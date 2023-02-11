@@ -1,0 +1,21 @@
+---
+dependencies: []
+
+galaxy_info:
+  author: nerve4 - Lee
+  description: Install openVAS on Nix Servers
+  license: "license (BSD, MIT)"
+  min_ansible_version: 2.4
+  platforms:
+    - name: RedHet
+      versions:
+        - 8
+    - name: Rocky
+      versions:
+        - 8
+  galaxy_tags:
+    - openVAS
+    - security
+    - scanning
+
+allow_duplicates: true

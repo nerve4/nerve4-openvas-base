@@ -1,0 +1,55 @@
+---
+# rhel-install-openvas-base.yml for nerve4-openvas-base
+
+- name: Disable SELinux
+  ansible.posix.selinux:
+    state: disabled
+
+- name: Reboot srv after selinux has been disabled
+  ansible.builtin.reboot:
+    reboot_timeout: "{{ reboot_timeo }}"
+
+- name: Install requirements on Rhel 8.x
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ rhel_pkgs }}"
+
+- name: Enable PowerTools repository on Rhel 8.x
+  become: yes
+  ansible.builtin.shell: |
+    sudo dnf config-manager --set-enabled powertools
+    sudo dnf update -y
+
+- name: Upload openVAS sysctl file
+  become: yes
+  ansible.builtin.template:
+    src: openvas-sysctl.j2
+    dest: "/etc/sysctl.d/{{ openvas_sysctl_fn }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Make sure all good with sysctl settings
+  become: yes
+  ansible.builtin.shell: |
+    sudo sysctl -p "{{ openvas_sysctl_fn }}"
+  args:
+    chdir: /etc/sysctl.d/
+
+- name: Import GPG keys
+  ansible.builtin.rpm_key:
+    state: present
+    key: "{{ item }}"
+  loop: "{{ rhel_a_gpg }}"
+
+- name: Install atomic rpm on Rhel 8.x
+  ansible.builtin.yum:
+    name: "{{ rhel_atomic_rpm }}"
+    state: present
+
+- name: Install gvm pkgs on Rhel 8.x
+  ansible.builtin.yum:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ thel_gvm_pkgs }}"
